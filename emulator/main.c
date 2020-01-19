@@ -35,3 +35,9 @@ Emulator* create_emu(size_t size, uint32_t eip, uint32_t esp){
 
   return emu;
 }
+
+// エミュレータを破壊
+void destroy_emu(Emulator* emu){
+  free(emu->memory);
+  free(emu);
+}
