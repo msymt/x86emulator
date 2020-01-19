@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdint.h>
 
+// メモリ: 1MB
+#define MEMORY_SIZE (1024 * 1024);
+
 typedef struct {
   // 汎用レジスタ
   uint32_t registers[REGISTERS_COUNT];
