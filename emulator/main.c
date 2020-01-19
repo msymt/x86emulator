@@ -41,3 +41,32 @@ void destroy_emu(Emulator* emu){
   free(emu->memory);
   free(emu);
 }
+
+int main(int argc, char* argv[]){
+  FILE* binary;
+  Emulator* emu;
+
+  if(argc != 2){
+    fprintf(stderr, "Usage: px86 filename\n");
+    exit(1);
+  }
+
+  // EIPが0, ESPが0x7c00の状態のエミュレータを作成
+  emu = create_emu(MEMORY_SIZE, 0x0000, 0x7c00);
+  
+  // 読み取りモード
+  binary = fopen(argv[1], "rb");
+  if(binary == NULL){
+    fprintf(stderr, "can't open %s file\n", argv[1]);
+    exit(1);
+  }
+  
+  // 機械語ファイルを読み込む(MAX 512 bytes)
+  // binaryから1bytesずつ0x200個読み取り, emu->memoryへ格納
+  fread(emu->memory, 1, 0x200, binary);
+  fclose(binary);
+
+  destroy_emu(emu);
+  
+  return 0;
+}
