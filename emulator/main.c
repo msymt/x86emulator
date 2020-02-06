@@ -56,7 +56,20 @@ uint32_t get_code32(Emulator* emu, int index){
     ret |= get_code8(emu, index + i) << (i * 8);
   }
   return ret;
-}\
+}
+
+// オペコードとそれを処理する関数の対応表
+void init_instructions(void){
+  int i;
+  // ゼロクリア
+  memset(instructions, 0, sizeof(instructions));
+  for(i = 0; i < 8; i++){
+    // mov命令
+    instructions[0xB8 + i] = mov_r32_imm32;
+  }
+  // jmp命令
+  instructions[0xEB] = short_jump;
+}
 
 int main(int argc, char* argv[]){
   FILE* binary;
@@ -82,6 +95,21 @@ int main(int argc, char* argv[]){
   fread(emu->memory, 1, 0x200, binary);
   fclose(binary);
 
+  init_instructions();
+
+  while(emi->eip < MEMORY_SIZE){
+    uint8_t code = get_code8(emu, 0);
+    if(instructions[code] == NULL){
+      printf("\n\nNot Implemented: %x\n", code);
+      break;
+    }
+    // 命令の実行
+    instructions[code](emu);
+    if(emu->eip == 0x00){
+      printf("\n\nend of program. \n\n");
+      break;
+    }
+  }
   destroy_emu(emu);
   
   return 0;

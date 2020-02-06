@@ -18,6 +18,9 @@ typedef struct {
   uint32_t eip;
 } Emulator;
 
+typedef void instruction_func_t(Emulator*);
+instruction_func_t* instructions[256];
+
 Emulator* create_emu(size_t size, uint32_t eip, uint32_t esp);
 
 void destroy_emu(Emulator* emu);
