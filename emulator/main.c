@@ -40,6 +40,24 @@ void short_jump(Emulator* emu){
   emu->eip += (diff + 2);
 }
 
+uint32_t get_code8(Emulator* emu, int index){
+  return emu->memory[emu->eip + index];
+}
+int32_t get_sign_code8(Emulator* emu, int index){
+  return (int8_t)emu->memory[emu->eip + index];
+}
+uint32_t get_code32(Emulator* emu, int index){
+  int i;
+  uint32_t ret = 0;
+  // リトルエンディアンでメモリの値を取得
+  for(i = 0; i < 4; i++){
+    // 8bitずつ左にずらす
+    // 最終的に32bit取得
+    ret |= get_code8(emu, index + i) << (i * 8);
+  }
+  return ret;
+}\
+
 int main(int argc, char* argv[]){
   FILE* binary;
   Emulator* emu;
