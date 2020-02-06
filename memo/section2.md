@@ -71,3 +71,39 @@ int *ptr = &val;
 - メモリアドレス上の0x00007bf4から32bit(32bytes) <=  41
 
 こうして, 変数`val`に41が書き込まれる.
+
+
+## 初めてのエミュレータ
+
+関数ポインタテーブル
+- 関数を登録するための配列
+- オペコードの値を添字に指定すると、そのオペコードに対応する処理を行う関数を呼び出せる仕組み
+
+- `uint8_t`: 8bitのunsigned int
+- `uint32_t`: unsigned long int, 32bitのunsigned int
+
+```
+void mov_r32_imm32(Emulator* emu);
+```
+
+オペコード: r: レジスタ番号として`0xb8 + r`
+- オペコード自身がレジスタの指定を含むタイプの命令
+- オペコードのすぐ後に32bitの即値が来る
+
+```
+void short_jump(Emulator* emu);
+```
+
+- 1byteのメモリ番地を取る、jmp命令(ショートジャンプ)に相当
+- オペランドを8bit(1byte)の符号付整数をとり、eipに加算
+- 現在地から前に127byte, 後ろに128byteの範囲内でジャンプ
+- オペランドに8bit(1byte)符号付整数としてdiffに読み込む(`int8_t diff = get_sign_code8(emu, 1);`)
+- jmp命令は**その次の命令の番地を基点に、ジャンプ先の計算を行うため、eipには`diff + 2(ショートジャンプ:2byte命令)`を加算**
+
+
+`get_sign_code8`や`get_code32`など
+- memory配列の指定した番地から8bit, 32bitの値を取得する
+- 第二引数: その時のeipからのオフセットを指定すると、その番地から値を読み取って返す
+
+`get_code32`
+- for文で1byteずつ読み取るごとに8bitずつ左にずらす処理を行う
