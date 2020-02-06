@@ -2,23 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-// メモリ: 1MB
-#define MEMORY_SIZE (1024 * 1024);
-
-typedef struct {
-  // 汎用レジスタ
-  uint32_t registers[REGISTERS_COUNT];
-
-  // ELFAGSレジスタ
-  uint32_t eflags;
-
-  // メモリ(バイト列)
-  uint8_t memory;
-
-  // プログラムカウンタ
-  uint32_t eip;
-} Emulator;
+#include "emulator.h"
 
 // エミュレータ構造体を生成し、初期化
 // ファイルから機械語プログラムを読み込む処理
@@ -40,6 +24,20 @@ Emulator* create_emu(size_t size, uint32_t eip, uint32_t esp){
 void destroy_emu(Emulator* emu){
   free(emu->memory);
   free(emu);
+}
+
+// 汎用レジスタに32bitの即値をコピーする, mov命令に対応
+void mov_r32_imm32(Emulator* emu){
+  uint8_t reg = get_code8(emu, 0) - 0xB8; // オペコードを取得
+  uint32_t value = get_code32(emu, 1);    // 32bitの即値
+  emu->registers[reg] = value;
+  emu->eip += 5;
+}
+
+// 1byteのメモリ番地をとるjmp命令に対応
+void short_jump(Emulator* emu){
+  int8_t diff = get_sign_code8(emu, 1); // オペランドに8bit(1byte)符号付整数としてdiffに読み込む
+  emu->eip += (diff + 2);
 }
 
 int main(int argc, char* argv[]){
